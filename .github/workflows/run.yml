@@ -1,0 +1,31 @@
+name: Daily Check-In
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
+
+      - name: Prepare players.yaml
+        run: |
+          cat <<EOF > players.yaml
+          ${{ secrets.PLAYERS_YAML }}
+          EOF
+
+      - name: Run check-in script
+        run: |
+          chmod +x run.sh
+          ./run.sh
