@@ -10,7 +10,7 @@ urls=(
   "https://sg-public-api.hoyolab.com/event/luna/os/sign?act_id=e202303301540311"
   "https://sg-public-api.hoyolab.com/event/mani/sign?act_id=e202110291205111"
   "https://sg-public-api.hoyolab.com/event/luna/os/sign?act_id=e202202281857121"
-  "https://sg-act-nap-api.hoyolab.com/event/luna/zzz/os/sign?act_id=e202406031448091"
+  "https://sg-public-api.hoyolab.com/event/luna/zzz/os/sign?act_id=e202406031448091"
 )
 
 language="en"
@@ -40,9 +40,15 @@ for ((i=0; i<players_count; i++)); do
     play_flag=$(yq e ".players[$i].$key" "$PLAYERS_YAML")
     if [ "$play_flag" = "true" ]; then
       echo -e "${YELLOW}-> Signing in for ${games[$j]}...${RESET}"
-      response=$(curl -s -X POST "${urls[$j]}&lang=${language}" \
-        -H "Cookie: $token" \
-        -H "User-Agent: Mozilla/5.0")
+      
+      headers=(-H "Content-Type: application/json" -H "Cookie: $token" -H "User-Agent: Mozilla/5.0")
+
+      # zzz fix
+      if [ "${games[$j]}" = "Zenless Zone Zero" ]; then
+        headers+=(-H "X-RPC-Signgame: zzz")
+      fi
+
+      response=$(curl -s -X POST "${urls[$j]}&lang=${language}" "${headers[@]}")
 
       if echo "$response" | jq . >/dev/null 2>&1; then
         echo -e "${GREEN}Response:${RESET}"
